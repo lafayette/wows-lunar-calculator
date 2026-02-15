@@ -1,138 +1,169 @@
 <template>
-  <div class='toast-container position-fixed top-0 end-0 p-3'>
+  <div class="toast-container position-fixed top-0 end-0 p-3">
     <div
-      v-for='tst in toasts'
-      :key='tst.id'
-      class='my-toast d-flex align-items-center p-2 mb-2'
-      role='alert'
-      aria-live='assertive'
-      aria-atomic='true'
+      v-for="tst in toasts"
+      :key="tst.id"
+      class="my-toast d-flex align-items-center p-2 mb-2"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
     >
-      <div class='px-2 small'>
-        <span class='fw-semibold me-2'>{{ toastIcon(tst.type) }}</span>
+      <div class="px-2 small">
+        <span class="fw-semibold me-2">{{ toastIcon(tst.type) }}</span>
         <span>{{ tst.msg }}</span>
       </div>
-      <button class='btn-close ms-auto me-2' type='button' @click='removeToast(tst.id)'></button>
+      <button class="btn-close ms-auto me-2" type="button" @click="removeToast(tst.id)" />
     </div>
   </div>
 
-  <div class='container py-4 py-md-5'>
-    <div class='d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4'>
+  <div class="container py-4 py-md-5">
+    <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
       <div>
-        <div class='d-flex align-items-center gap-2'>
-          <h1 class='h3 m-0 brand'>{{ t('appTitle') }}</h1>
+        <div class="d-flex align-items-center gap-2">
+          <h1 class="h3 m-0 brand">
+            {{ t('appTitle') }}
+          </h1>
         </div>
       </div>
 
-      <div class='d-flex gap-2 align-items-center'>
-        <div class='btn-group' role='group' aria-label='language switch'>
-          <button class='btn btn-outline-light' :class='{ active: lang === "ru" }' @click='setLang("ru")'>
+      <div class="d-flex gap-2 align-items-center">
+        <div class="btn-group" role="group" aria-label="language switch">
+          <button class="btn btn-outline-light" :class="{ active: lang === &quot;ru&quot; }" @click="setLang(&quot;ru&quot;)">
             {{ t('ru') }}
           </button>
-          <button class='btn btn-outline-light' :class='{ active: lang === "en" }' @click='setLang("en")'>
+          <button class="btn btn-outline-light" :class="{ active: lang === &quot;en&quot; }" @click="setLang(&quot;en&quot;)">
             {{ t('en') }}
           </button>
         </div>
 
-        <button class='btn btn-outline-light' @click='resetAll'>{{ t('reset') }}</button>
+        <button class="btn btn-outline-light" @click="resetAll">
+          {{ t('reset') }}
+        </button>
       </div>
     </div>
 
-    <div class='row g-3 g-md-4'>
-      <div class='col-12 col-lg-5'>
-        <div class='glass p-3 p-md-4'>
-          <div class='d-flex align-items-center justify-content-between mb-3'>
-            <div class='h5 m-0'>{{ t('addStage') }}</div>
+    <div class="row g-3 g-md-4">
+      <div class="col-12 col-lg-5">
+        <div class="glass p-3 p-md-4">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="h5 m-0">
+              {{ t('addStage') }}
+            </div>
           </div>
 
-          <div class='row g-3'>
-            <div class='col-12'>
-              <label class='form-label muted'>{{ t('team') }}</label>
-              <select v-model='selectedTeam' class='form-select'>
-                <option v-for='team in teams' :key='team' :value='team'>{{ team }}</option>
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label muted">{{ t('team') }}</label>
+              <select v-model="selectedTeam" class="form-select">
+                <option v-for="team in teams" :key="team" :value="team">
+                  {{ team }}
+                </option>
               </select>
             </div>
 
-            <div class='col-12'>
-              <label class='form-label muted'>{{ t('nextStage') }}</label>
-              <div class='d-flex flex-wrap align-items-center gap-2'>
-                <span class='pill'>
+            <div class="col-12">
+              <label class="form-label muted">{{ t('nextStage') }}</label>
+              <div class="d-flex flex-wrap align-items-center gap-2">
+                <span class="pill">
                   {{ nextRow ? `${selectedTeam} • ${nextRow.stage}` : t('allStagesDone') }}
                 </span>
-                <span class='pill' :class='{ muted: !nextRow }'>
+                <span class="pill" :class="{ muted: !nextRow }">
                   {{ nextRow ? t('rewardLabel', { reward: nextRow.reward }) : '—' }}
                 </span>
               </div>
             </div>
 
-            <div class='col-12'>
-              <div class='d-flex align-items-center justify-content-between'>
-                <label class='form-label muted mb-1'>{{ t('payment') }}</label>
+            <div class="col-12">
+              <div class="d-flex align-items-center justify-content-between">
+                <label class="form-label muted mb-1">{{ t('payment') }}</label>
 
-                <span class='pill' :style='ratioPillStyle' :class='{ muted: ratioValue === null }'>
+                <span class="pill" :style="ratioPillStyle" :class="{ muted: ratioValue === null }">
                   {{ t('ratioLabel') }}
-                  <span v-if='ratioValue !== null' class='fw-semibold'>{{ ratioValue }}</span>
+                  <span v-if="ratioValue !== null" class="fw-semibold">{{ ratioValue }}</span>
                   <span v-else>—</span>
                 </span>
               </div>
 
-              <div class='row g-2 mt-2'>
-                <div class='col-6 d-grid'>
-                  <input class='btn-check' type='radio' name='currency' id='curToken' value='token' v-model='currency' />
-                  <label class='btn btn-outline-light d-flex align-items-center justify-content-center' for='curToken'>
+              <div class="row g-2 mt-2">
+                <div class="col-6 d-grid">
+                  <input
+                    id="curToken"
+                    v-model="currency"
+                    class="btn-check"
+                    type="radio"
+                    name="currency"
+                    value="token"
+                  >
+                  <label class="btn btn-outline-light d-flex align-items-center justify-content-center" for="curToken">
                     {{ t('tokens') }}
                   </label>
-                  <div class='muted small-note mt-1 text-center'>
+                  <div class="muted small-note mt-1 text-center">
                     {{ nextRow ? nextRow.token_amount.toLocaleString('ru-RU') : '—' }}
                   </div>
                 </div>
 
-                <div class='col-6 d-grid'>
-                  <input class='btn-check' type='radio' name='currency' id='curCoal' value='coal' v-model='currency' />
+                <div class="col-6 d-grid">
+                  <input
+                    id="curCoal"
+                    v-model="currency"
+                    class="btn-check"
+                    type="radio"
+                    name="currency"
+                    value="coal"
+                  >
                   <label
-                    class='btn btn-outline-light d-flex align-items-center justify-content-center'
-                    :style='coalButtonStyle'
-                    for='curCoal'
+                    class="btn btn-outline-light d-flex align-items-center justify-content-center"
+                    :style="coalButtonStyle"
+                    for="curCoal"
                   >
                     {{ t('coal') }}
                   </label>
-                  <div class='muted small-note mt-1 text-center'>
+                  <div class="muted small-note mt-1 text-center">
                     {{ nextRow ? nextRow.coal_amount.toLocaleString('ru-RU') : '—' }}
                   </div>
                 </div>
               </div>
 
-              <div class='muted small-note mt-2'>
+              <div class="muted small-note mt-2">
                 {{ t('willAddSelectedCurrency') }}
               </div>
-
             </div>
 
-            <div class='col-12 d-grid'>
-              <button class='btn btn-primary btn-lg' :disabled='!nextRow' @click='addNext'>
+            <div class="col-12 d-grid">
+              <button class="btn btn-primary btn-lg" :disabled="!nextRow" @click="addNext">
                 {{ t('add') }}
               </button>
             </div>
 
-            <hr class='border-light opacity-10 my-2' />
+            <hr class="border-light opacity-10 my-2">
 
-            <div class='col-12'>
-              <div class='d-flex align-items-center justify-content-between'>
-                <div class='h6 m-0'>{{ t('totals') }}</div>
-                <span class='muted small-note'>{{ t('sumAcrossTeams') }}</span>
+            <div class="col-12">
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="h6 m-0">
+                  {{ t('totals') }}
+                </div>
+                <span class="muted small-note">{{ t('sumAcrossTeams') }}</span>
               </div>
 
-              <div class='row g-2 mt-2'>
-                <div class='col-6'>
-                  <div class='glass p-3'>
-                    <div class='muted small-note'>{{ t('tokens') }}</div>
-                    <div class='h3 m-0'>{{ totalTokens.toLocaleString('ru-RU') }}</div>
+              <div class="row g-2 mt-2">
+                <div class="col-6">
+                  <div class="glass p-3">
+                    <div class="muted small-note">
+                      {{ t('tokens') }}
+                    </div>
+                    <div class="h3 m-0">
+                      {{ totalTokens.toLocaleString('ru-RU') }}
+                    </div>
                   </div>
                 </div>
-                <div class='col-6'>
-                  <div class='glass p-3'>
-                    <div class='muted small-note'>{{ t('coal') }}</div>
-                    <div class='h3 m-0'>{{ totalCoal.toLocaleString('ru-RU') }}</div>
+                <div class="col-6">
+                  <div class="glass p-3">
+                    <div class="muted small-note">
+                      {{ t('coal') }}
+                    </div>
+                    <div class="h3 m-0">
+                      {{ totalCoal.toLocaleString('ru-RU') }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -141,54 +172,70 @@
         </div>
       </div>
 
-      <div class='col-12 col-lg-7'>
-        <div class='glass p-3 p-md-4 h-100'>
-          <div class='d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3'>
-            <div class='h5 m-0'>{{ t('addedStages') }}</div>
-            <div class='muted small-note'>
+      <div class="col-12 col-lg-7">
+        <div class="glass p-3 p-md-4 h-100">
+          <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
+            <div class="h5 m-0">
+              {{ t('addedStages') }}
+            </div>
+            <div class="muted small-note">
               {{ t('removeRule') }}
             </div>
           </div>
 
-          <div class='table-responsive'>
-            <table class='table table-sm table-darkish align-middle'>
+          <div class="table-responsive">
+            <table class="table table-sm table-darkish align-middle">
               <thead>
-                <tr class='muted'>
-                  <th style='width: 22%;'>{{ t('team') }}</th>
-                  <th style='width: 12%;'>{{ t('stage') }}</th>
-                  <th style='width: 26%;'>{{ t('rewardWholeStage') }}</th>
-                  <th style='width: 16%;'>{{ t('payment') }}</th>
-                  <th style='width: 12%;' title='Coal to Token ratio'>{{ t('ratioCol') }}</th>
-                  <th style='width: 17%;' class='text-end'>{{ t('cost') }}</th>
-                  <th style='width: 5%;' class='text-end'></th>
+                <tr class="muted">
+                  <th style="width: 22%;">
+                    {{ t('team') }}
+                  </th>
+                  <th style="width: 12%;">
+                    {{ t('stage') }}
+                  </th>
+                  <th style="width: 26%;">
+                    {{ t('rewardWholeStage') }}
+                  </th>
+                  <th style="width: 16%;">
+                    {{ t('payment') }}
+                  </th>
+                  <th style="width: 12%;" title="Coal to Token ratio">
+                    {{ t('ratioCol') }}
+                  </th>
+                  <th style="width: 17%;" class="text-end">
+                    {{ t('cost') }}
+                  </th>
+                  <th style="width: 5%;" class="text-end" />
                 </tr>
               </thead>
 
-              <tbody v-if='items.length === 0'>
-                <tr class='muted'>
-                  <td colspan='7' class='py-4 text-center'>
+              <tbody v-if="items.length === 0">
+                <tr class="muted">
+                  <td colspan="7" class="py-4 text-center">
                     {{ t('empty') }}
                   </td>
                 </tr>
               </tbody>
 
               <tbody v-else>
-                <tr v-for='it in items' :key='it.id'>
-                  <td><span class='badge badge-soft'>{{ it.team }}</span></td>
-                  <td><span class='pill'>{{ it.stage }}</span></td>
-                  <td class='muted'>{{ it.is_reward_stage ? it.reward : '' }}</td>
-                  <td>
-                    <span v-if='it.currency === "token"' class='badge bg-primary-subtle text-primary-emphasis'>{{ t('tokens') }}</span>
-                    <span v-else class='badge bg-secondary text-light'>{{ t('coal') }}</span>
+                <tr v-for="it in items" :key="it.id">
+                  <td><span class="badge badge-soft">{{ it.team }}</span></td>
+                  <td><span class="pill">{{ it.stage }}</span></td>
+                  <td class="muted">
+                    {{ it.is_reward_stage ? it.reward : '' }}
                   </td>
-                  <td class='small' style='white-space:nowrap;' :style='ratioCellStyle(it)'>
+                  <td>
+                    <span v-if="it.currency === &quot;token&quot;" class="badge bg-primary-subtle text-primary-emphasis">{{ t('tokens') }}</span>
+                    <span v-else class="badge bg-secondary text-light">{{ t('coal') }}</span>
+                  </td>
+                  <td class="small" style="white-space:nowrap;" :style="ratioCellStyle(it)">
                     {{ (it.coal_amount / it.token_amount).toFixed(2) }}
                   </td>
-                  <td class='text-end fw-semibold'>
+                  <td class="text-end fw-semibold">
                     {{ (it.currency === 'token' ? it.token_amount : it.coal_amount).toLocaleString('ru-RU') }}
                   </td>
-                  <td class='text-end'>
-                    <button v-if='canRemove(it)' class='btn btn-sm btn-outline-light' title='Remove' @click='removeItem(it)'>
+                  <td class="text-end">
+                    <button v-if="canRemove(it)" class="btn btn-sm btn-outline-light" title="Remove" @click="removeItem(it)">
                       ✕
                     </button>
                   </td>
@@ -202,11 +249,14 @@
   </div>
 </template>
 
+<style scoped>
+</style>
+
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { TEAMS } from './data/stages.js'
-import en from './i18n/en.js'
-import ru from './i18n/ru.js'
+import { TEAMS } from './data/stages'
+import en from './i18n/en'
+import ru from './i18n/ru'
 
 const dicts = { en, ru }
 const lang = ref('en')
@@ -219,7 +269,7 @@ function setLang(code) {
 
 function t(key, vars = {}) {
   const s = dicts[lang.value]?.[key] ?? key
-  return s.replace(/\{(\w+)\}/g, (_, k) => (vars[k] ?? `{${k}}`))
+  return s.replace(/\{(\w+)}/g, (_, k) => (vars[k] ?? `{${k}}`))
 }
 
 function stageKey(stageStr) {
@@ -507,7 +557,3 @@ function removeItem(item) {
   items.value = items.value.filter(x => x.id !== item.id)
 }
 </script>
-
-<style scoped>
-/* Keep component-specific styles minimal; most styling lives in main.css */
-</style>

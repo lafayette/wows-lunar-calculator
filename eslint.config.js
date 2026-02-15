@@ -1,5 +1,5 @@
-import js from '@eslint/js'
 import globals from 'globals'
+import js from '@eslint/js'
 import vue from 'eslint-plugin-vue'
 
 export default [
@@ -17,6 +17,7 @@ export default [
     },
     rules: {
       quotes: ['error', 'single', { avoidEscape: true }],
+      'vue/html-quotes': ['error', 'double'],
       semi: ['error', 'never'],
       'vue/html-indent': ['error', 2],
       'vue/max-attributes-per-line': ['error', { singleline: 4 }],
