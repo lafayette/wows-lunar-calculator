@@ -1,5 +1,7 @@
 export default {
   appTitle: 'Lunar New Year Event Calculator',
+  tabPlanner: 'Planner',
+  tabCalculator: 'Calculator',
   addStage: 'Add stage',
   team: 'Team',
   nextStage: 'Next stage',
@@ -31,5 +33,33 @@ export default {
   toastNoStages: 'Nothing to add',
   toastAdded: 'Added: {team} {stage} ({currency})',
   toastReset: 'Reset',
-  toastCantRemove: 'You can only remove the last stage within a team'
+  toastCantRemove: 'You can only remove the last stage within a team',
+
+  // Planner
+  plannerTitle: 'Planner',
+  plannerAddGoal: 'Add goal',
+  plannerTokensAvailable: 'Available tokens',
+  plannerTokensPlaceholder: 'e.g. 2500',
+  plannerTokensHint: 'If tokens are not enough for all selected stages, the plan will calculate required coal and the best split.',
+  plannerGoalsTitle: 'Goals',
+  plannerTargetStage: 'Target stage',
+  plannerSelectStage: 'Select stage…',
+  plannerCheckInput: 'Please check input:',
+  plannerCalc: 'Calculate',
+  plannerResult: 'Result',
+  plannerGoalsCount: 'Goals: {n}',
+  plannerTeamsCount: 'Teams: {n}',
+  plannerStagesCount: 'Stages to complete: {n}',
+  plannerEmpty: 'Fill tokens and add at least one goal, then click “Calculate”.',
+  plannerCoalNeeded: 'Coal required',
+  plannerLeftoverWarn: 'Some tokens are left but cannot be spent (not enough for the cheapest stage).',
+  plannerTokensUsed: 'Tokens used / available',
+  plannerTokensLeft: 'left',
+  plannerDetails: 'Details by team',
+  plannerStagesShort: 'stages',
+  plannerSummary: 'Team summary',
+  plannerErrTokens: 'Available tokens must be a non-negative number.',
+  plannerErrGoals: 'Add at least one goal (team + stage).',
+  plannerToastCalculated: 'Calculated',
+  plannerResetConfirm: 'Reset planner inputs?'
 }

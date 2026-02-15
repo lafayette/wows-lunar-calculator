@@ -1,5 +1,7 @@
 export default {
   appTitle: 'Lunar New Year Event Calculator',
+  tabPlanner: 'Planner',
+  tabCalculator: 'Calculator',
   addStage: 'Добавить этап',
   team: 'Команда',
   nextStage: 'Следующий этап',
@@ -31,5 +33,33 @@ export default {
   toastNoStages: 'Нечего добавлять',
   toastAdded: 'Добавлено: {team} {stage} ({currency})',
   toastReset: 'Сброшено',
-  toastCantRemove: 'Удалять можно только последний этап внутри команды'
+  toastCantRemove: 'Удалять можно только последний этап внутри команды',
+
+  // Planner
+  plannerTitle: 'Planner',
+  plannerAddGoal: 'Добавить цель',
+  plannerTokensAvailable: 'Доступные токены',
+  plannerTokensPlaceholder: 'например: 2500',
+  plannerTokensHint: 'Если токенов не хватает на все выбранные этапы, будет посчитан нужный уголь и оптимальное распределение.',
+  plannerGoalsTitle: 'Цели',
+  plannerTargetStage: 'Этап (цель)',
+  plannerSelectStage: 'Выберите этап…',
+  plannerCheckInput: 'Проверь ввод:',
+  plannerCalc: 'Рассчитать',
+  plannerResult: 'Результат',
+  plannerGoalsCount: 'Целей: {n}',
+  plannerTeamsCount: 'Команд: {n}',
+  plannerStagesCount: 'Этапов к прохождению: {n}',
+  plannerEmpty: 'Заполни токены и добавь хотя бы одну цель, затем нажми «Рассчитать».',
+  plannerCoalNeeded: 'Нужно угля',
+  plannerLeftoverWarn: 'Остались токены, но их невозможно потратить (не хватает на самый дешёвый этап).',
+  plannerTokensUsed: 'Токены: использовано / доступно',
+  plannerTokensLeft: 'остаток',
+  plannerDetails: 'Детализация по командам',
+  plannerStagesShort: 'этапов',
+  plannerSummary: 'Сводка по командам',
+  plannerErrTokens: 'Доступные токены должны быть неотрицательным числом.',
+  plannerErrGoals: 'Добавь хотя бы одну цель (команда + этап).',
+  plannerToastCalculated: 'Посчитано',
+  plannerResetConfirm: 'Сбросить данные planner?'
 }

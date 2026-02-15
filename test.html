@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Event Planner — Tokens vs Coal</title>
+
+    <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+    />
+
+    <style>
+        body { background: #0b1220; }
+        .card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10); }
+        .text-muted-2 { color: rgba(255,255,255,0.65) !important; }
+        .badge-soft {
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.18);
+            color: rgba(255,255,255,0.88);
+        }
+        .form-control, .form-select {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.92);
+        }
+        .form-control:focus, .form-select:focus {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.25);
+            box-shadow: none;
+            color: rgba(255,255,255,0.92);
+        }
+        option { color: #0b1220; }
+
+        .btn-primary { box-shadow: 0 10px 30px rgba(13,110,253,0.25); }
+        .small-note { font-size: 0.92rem; }
+        .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+        /* table dark fix */
+        .table-dark {
+            --bs-table-bg: rgba(255,255,255,0.03);
+            --bs-table-striped-bg: rgba(255,255,255,0.05);
+            --bs-table-striped-color: rgba(255,255,255,0.92);
+            --bs-table-color: rgba(255,255,255,0.92);
+            --bs-table-border-color: rgba(255,255,255,0.10);
+        }
+        .table thead th { color: rgba(255,255,255,0.80); }
+        .table td { color: rgba(255,255,255,0.92); }
+
+        /* accordion look */
+        .accordion-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.10);
+            border-radius: 14px !important;
+            overflow: hidden;
+        }
+        .accordion-button {
+            background: rgba(255,255,255,0.03);
+            color: rgba(255,255,255,0.92);
+        }
+        .accordion-button:not(.collapsed) {
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.95);
+            box-shadow: none;
+        }
+        .accordion-button:focus { box-shadow: none; }
+        .accordion-body {
+            background: rgba(255,255,255,0.02);
+        }
+    </style>
+</head>
+
+<body>
+<div class="container py-4 py-md-5">
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <div>
+                    <h1 class="h3 mb-1 text-white">Планировщик этапов события</h1>
+                    <div class="text-muted-2 small-note">
+                        Внутри команды этапы/награды строго последовательно. Каждый этап оплачивается
+                        <span class="badge badge-soft">токенами</span> или <span class="badge badge-soft">углём</span>.
+                        <br />
+                        Оптимизация: <b>сначала тратим максимум токенов</b>, затем минимизируем уголь.
+                    </div>
+                </div>
+                <div class="text-muted-2 small mono">
+                    Правило: нельзя тратить уголь, оставляя потратимые токены
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-5">
+            <div class="card rounded-4 shadow-sm">
+                <div class="card-body p-3 p-md-4">
+                    <div class="mb-3">
+                        <label for="tokensAvailable" class="form-label text-white">Доступные токены</label>
+                        <input
+                                id="tokensAvailable"
+                                class="form-control"
+                                type="number"
+                                min="0"
+                                step="1"
+                                value="0"
+                                placeholder="Например: 2500"
+                        />
+                        <div class="form-text text-muted-2">
+                            Если токенов не хватает на все выбранные этапы — будет посчитан нужный уголь и распределение.
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                        <div class="text-white fw-semibold">Цели (команда + этап)</div>
+                        <button id="addGoalBtn" class="btn btn-sm btn-outline-light">+ Добавить цель</button>
+                    </div>
+
+                    <div id="goalsWrap" class="vstack gap-2"></div>
+
+                    <div class="d-grid gap-2 mt-3">
+                        <button id="calcBtn" class="btn btn-primary btn-lg">Рассчитать</button>
+                        <button id="resetBtn" class="btn btn-outline-light">Сбросить</button>
+                    </div>
+
+                    <div id="errors" class="mt-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-7">
+            <div class="card rounded-4 shadow-sm h-100">
+                <div class="card-body p-3 p-md-4">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                        <div class="text-white fw-semibold">Результат</div>
+                        <div id="summaryBadges" class="d-flex flex-wrap gap-2"></div>
+                    </div>
+
+                    <div id="resultEmpty" class="text-muted-2">
+                        Заполни токены и добавь хотя бы одну цель, затем нажми «Рассчитать».
+                    </div>
+
+                    <div id="resultWrap" class="d-none">
+                        <div class="row g-3 mb-3">
+                            <div class="col-12 col-md-6">
+                                <div class="p-3 rounded-4" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10);">
+                                    <div class="text-muted-2 small">Нужно угля</div>
+                                    <div id="coalNeeded" class="display-6 text-white mb-0 mono">0</div>
+                                    <div id="warnLeftover" class="text-warning small mt-2 d-none">
+                                        Остались токены, которые невозможно потратить (не хватает на самый дешёвый этап).
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="p-3 rounded-4" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10);">
+                                    <div class="text-muted-2 small">Токены: использовано / доступно</div>
+                                    <div class="text-white mb-0 mono">
+                                        <span id="tokensUsed">0</span> / <span id="tokensAvailOut">0</span>
+                                        <span class="text-muted-2"> (остаток: </span><span id="tokensLeft">0</span><span class="text-muted-2">)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                            <div class="text-white fw-semibold">Детализация по командам</div>
+                            <div class="text-muted-2 small">
+                                CTR = <span class="mono">coal / tokens</span> (выше — выгоднее платить токенами)
+                            </div>
+                        </div>
+
+                        <!-- ✅ вместо длинного списка -->
+                        <div id="teamsAccordion" class="accordion vstack gap-2"></div>
+
+                        <div class="mt-3">
+                            <div class="text-white fw-semibold mb-2">Сводка по командам</div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-dark table-striped align-middle mb-0">
+                                    <thead>
+                                    <tr>
+                                        <th>Команда</th>
+                                        <th class="text-end">Этапов</th>
+                                        <th class="text-end">Токены</th>
+                                        <th class="text-end">Уголь</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="teamsTbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div> <!-- /resultWrap -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS нужен для accordion/collapse -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script type="module">
+  // ✅ Берём TEAMS из src/data/stages.js
+  // Поправь путь, если index.html лежит не в корне проекта.
+  import { TEAMS } from './src/data/stages.js'
+
+  // ====== HELPERS: build stage catalog per team ======
+  function buildTeamStageCatalog(teams) {
+    const map = new Map() // teamId -> flattened stages
+    for (const t of teams) {
+      const flat = []
+      let globalIdx = 0
+      t.rewards.forEach((r, rIdx) => {
+        r.stages.forEach((s, sIdx) => {
+          globalIdx++
+          const label = `${rIdx + 1}.${sIdx + 1}` // "reward.stage"
+          flat.push({
+            key: `${t.id}:${label}`,
+            teamId: t.id,
+            team: t.team,
+            rewardId: r.id,
+            reward: r.name,
+            rewardIndex: rIdx + 1,
+            stageIndex: sIdx + 1,
+            label,
+            tokens: s.tokens,
+            coal: s.coal,
+            ratio: s.tokens > 0 ? (s.coal / s.tokens) : Infinity,
+            globalOrder: globalIdx // within team
+          })
+        })
+      })
+      map.set(t.id, flat)
+    }
+    return map
+  }
+
+  const TEAM_STAGE_CATALOG = buildTeamStageCatalog(TEAMS)
+
+  // ====== UI: goals rows ======
+  const goalsWrap = document.getElementById('goalsWrap')
+  const addGoalBtn = document.getElementById('addGoalBtn')
+  const calcBtn = document.getElementById('calcBtn')
+  const resetBtn = document.getElementById('resetBtn')
+  const errorsEl = document.getElementById('errors')
+
+  let goalRowIdSeq = 0
+
+  function teamOptionsHtml(selectedTeamId = null) {
+    const opts = TEAMS.map(t => {
+      const sel = String(t.id) === String(selectedTeamId) ? ' selected' : ''
+      return `<option value="${t.id}"${sel}>${escapeHtml(t.team)}</option>`
+    }).join('')
+    return `<option value="" disabled${selectedTeamId ? '' : ' selected'}>Выберите команду…</option>${opts}`
+  }
+
+  function stageOptionsHtml(teamId, selectedLabel = null) {
+    if (!teamId) return `<option value="" disabled selected>Сначала выберите команду…</option>`
+    const stages = TEAM_STAGE_CATALOG.get(Number(teamId)) || []
+    const opts = stages.map(st => {
+      const sel = String(st.label) === String(selectedLabel) ? ' selected' : ''
+      return `<option value="${st.label}"${sel}>${st.label} — ${escapeHtml(st.reward)} (T:${st.tokens}, C:${st.coal}, CTR:${formatRatio(st.ratio)})</option>`
+    }).join('')
+    return `<option value="" disabled${selectedLabel ? '' : ' selected'}>Выберите этап…</option>${opts}`
+  }
+
+  function addGoalRow(initial = {}) {
+    const rowId = ++goalRowIdSeq
+    const teamId = initial.teamId ?? ''
+    const stageLabel = initial.stageLabel ?? ''
+
+    const row = document.createElement('div')
+    row.className = 'p-2 rounded-4'
+    row.style.background = 'rgba(255,255,255,0.04)'
+    row.style.border = '1px solid rgba(255,255,255,0.10)'
+    row.dataset.rowId = String(rowId)
+
+    row.innerHTML = `
+          <div class="row g-2 align-items-end">
+            <div class="col-12 col-md-5">
+              <label class="form-label text-muted-2 mb-1">Команда</label>
+              <select class="form-select goal-team">
+                ${teamOptionsHtml(teamId)}
+              </select>
+            </div>
+            <div class="col-12 col-md-6">
+              <label class="form-label text-muted-2 mb-1">Этап (цель)</label>
+              <select class="form-select goal-stage">
+                ${stageOptionsHtml(teamId, stageLabel)}
+              </select>
+            </div>
+            <div class="col-12 col-md-1 d-grid">
+              <button class="btn btn-outline-light goal-remove" title="Удалить">×</button>
+            </div>
+          </div>
+        `
+
+    const teamSel = row.querySelector('.goal-team')
+    const stageSel = row.querySelector('.goal-stage')
+    const removeBtn = row.querySelector('.goal-remove')
+
+    teamSel.addEventListener('change', () => {
+      stageSel.innerHTML = stageOptionsHtml(teamSel.value, '')
+    })
+
+    removeBtn.addEventListener('click', () => {
+      row.remove()
+      if (goalsWrap.children.length === 0) addGoalRow()
+    })
+
+    goalsWrap.appendChild(row)
+  }
+
+  function resetAll() {
+    document.getElementById('tokensAvailable').value = '0'
+    goalsWrap.innerHTML = ''
+    addGoalRow()
+    renderErrors([])
+    renderEmptyResult()
+  }
+
+  addGoalBtn.addEventListener('click', () => addGoalRow())
+  resetBtn.addEventListener('click', resetAll)
+
+  addGoalRow()
+
+  // ====== CALC: required stages set (prefix per team) ======
+  function collectGoals() {
+    const rows = Array.from(goalsWrap.children)
+    const goals = []
+    for (const r of rows) {
+      const teamId = r.querySelector('.goal-team').value
+      const stageLabel = r.querySelector('.goal-stage').value
+      if (teamId && stageLabel) goals.push({ teamId: Number(teamId), stageLabel: String(stageLabel) })
+    }
+    return goals
+  }
+
+  function buildRequiredStages(goals) {
+    const perTeamMaxOrder = new Map()
+    for (const g of goals) {
+      const stages = TEAM_STAGE_CATALOG.get(g.teamId) || []
+      const target = stages.find(s => s.label === g.stageLabel)
+      if (!target) continue
+      const cur = perTeamMaxOrder.get(g.teamId) ?? 0
+      if (target.globalOrder > cur) perTeamMaxOrder.set(g.teamId, target.globalOrder)
+    }
+
+    const required = []
+    for (const [teamId, maxOrder] of perTeamMaxOrder.entries()) {
+      const stages = TEAM_STAGE_CATALOG.get(teamId) || []
+      required.push(...stages.filter(s => s.globalOrder <= maxOrder))
+    }
+
+    required.sort((a, b) => {
+      if (a.team === b.team) return a.globalOrder - b.globalOrder
+      return a.team.localeCompare(b.team)
+    })
+
+    return required
+  }
+
+  // ====== OPTIMIZATION (как у тебя уже работает) ======
+  function optimizePayment(requiredStages, tokensAvailable) {
+    const totalCoal = requiredStages.reduce((sum, s) => sum + s.coal, 0)
+    const totalTokensAll = requiredStages.reduce((sum, s) => sum + s.tokens, 0)
+
+    const Traw = Math.max(0, Math.floor(tokensAvailable))
+
+    // если токенов хватает — всё токенами
+    if (Traw >= totalTokensAll) {
+      const decisions = requiredStages.map(s => ({ ...s, pay: 'tokens' }))
+      return {
+        totalCoal,
+        totalTokensAll,
+        tokensUsed: totalTokensAll,
+        tokensAvailable: Traw,
+        tokensLeft: Traw - totalTokensAll,
+        savedCoal: totalCoal,
+        coalNeeded: 0,
+        decisions
+      }
+    }
+
+    const items = requiredStages
+    const n = items.length
+    const T = Math.min(Traw, totalTokensAll)
+    const W = T + 1
+
+    let dpPrev = new Int32Array(W)
+    let dpCur = new Int32Array(W)
+    dpPrev.fill(-1)
+    dpPrev[0] = 0
+
+    const take = new Uint8Array(n * W)
+
+    for (let i = 0; i < n; i++) {
+      dpCur.fill(-1)
+      const w = items[i].tokens | 0
+      const val = items[i].coal | 0
+
+      for (let t = 0; t <= T; t++) {
+        let best = dpPrev[t]
+        let took = 0
+
+        if (t >= w && dpPrev[t - w] !== -1) {
+          const cand = dpPrev[t - w] + val
+          if (cand > best) {
+            best = cand
+            took = 1
+          }
+        }
+
+        dpCur[t] = best
+        take[i * W + t] = took
+      }
+
+      const tmp = dpPrev
+      dpPrev = dpCur
+      dpCur = tmp
+    }
+
+    let bestT = 0
+    for (let t = T; t >= 0; t--) {
+      if (dpPrev[t] !== -1) { bestT = t; break }
+    }
+
+    const savedCoal = dpPrev[bestT] === -1 ? 0 : dpPrev[bestT]
+    const coalNeeded = Math.max(0, totalCoal - savedCoal)
+
+    const picked = new Set()
+    let t = bestT
+    for (let i = n - 1; i >= 0; i--) {
+      if (take[i * W + t] === 1) {
+        picked.add(i)
+        t -= items[i].tokens
+      }
+    }
+
+    const decisions = items.map((s, idx) => ({ ...s, pay: picked.has(idx) ? 'tokens' : 'coal' }))
+
+    return {
+      totalCoal,
+      totalTokensAll,
+      tokensUsed: bestT,
+      tokensAvailable: Traw,
+      tokensLeft: Traw - bestT,
+      savedCoal,
+      coalNeeded,
+      decisions
+    }
+  }
+
+  // ====== RENDER ======
+  const resultEmpty = document.getElementById('resultEmpty')
+  const resultWrap = document.getElementById('resultWrap')
+  const coalNeededEl = document.getElementById('coalNeeded')
+  const tokensUsedEl = document.getElementById('tokensUsed')
+  const tokensAvailOutEl = document.getElementById('tokensAvailOut')
+  const tokensLeftEl = document.getElementById('tokensLeft')
+  const teamsTbody = document.getElementById('teamsTbody')
+  const summaryBadges = document.getElementById('summaryBadges')
+  const warnLeftover = document.getElementById('warnLeftover')
+  const teamsAccordion = document.getElementById('teamsAccordion')
+
+  function renderErrors(errs) {
+    if (!errs.length) { errorsEl.innerHTML = ''; return }
+    errorsEl.innerHTML = `
+          <div class="alert alert-danger mb-0">
+            <div class="fw-semibold">Проверь ввод:</div>
+            <ul class="mb-0">${errs.map(e => `<li>${escapeHtml(e)}</li>`).join('')}</ul>
+          </div>
+        `
+  }
+
+  function renderEmptyResult() {
+    resultEmpty.classList.remove('d-none')
+    resultWrap.classList.add('d-none')
+    summaryBadges.innerHTML = ''
+    teamsAccordion.innerHTML = ''
+    teamsTbody.innerHTML = ''
+    warnLeftover.classList.add('d-none')
+  }
+
+  function renderBadges({ requiredStagesCount, goalsCount, uniqueTeamsCount }) {
+    summaryBadges.innerHTML = `
+          <span class="badge badge-soft">Целей: ${goalsCount}</span>
+          <span class="badge badge-soft">Команд: ${uniqueTeamsCount}</span>
+          <span class="badge badge-soft">Этапов к прохождению: ${requiredStagesCount}</span>
+        `
+  }
+
+  function renderResults(model, meta) {
+    resultEmpty.classList.add('d-none')
+    resultWrap.classList.remove('d-none')
+
+    coalNeededEl.textContent = formatInt(model.coalNeeded)
+    tokensUsedEl.textContent = formatInt(model.tokensUsed)
+    tokensAvailOutEl.textContent = formatInt(model.tokensAvailable)
+    tokensLeftEl.textContent = formatInt(model.tokensLeft)
+
+    if (model.coalNeeded > 0 && model.tokensLeft > 0) warnLeftover.classList.remove('d-none')
+    else warnLeftover.classList.add('d-none')
+
+    renderBadges({
+      requiredStagesCount: model.decisions.length,
+      goalsCount: meta.goalsCount,
+      uniqueTeamsCount: meta.uniqueTeamsCount
+    })
+
+    // group decisions by team
+    const perTeam = new Map()
+    for (const d of model.decisions) {
+      const cur = perTeam.get(d.teamId) || { teamId: d.teamId, team: d.team, rows: [], stages: 0, tokens: 0, coal: 0 }
+      cur.rows.push(d)
+      cur.stages += 1
+      if (d.pay === 'tokens') cur.tokens += d.tokens
+      else cur.coal += d.coal
+      perTeam.set(d.teamId, cur)
+    }
+
+    const teamBlocks = Array.from(perTeam.values()).sort((a, b) => a.team.localeCompare(b.team))
+
+    // ✅ accordion per team
+    teamsAccordion.innerHTML = teamBlocks.map((tb, idx) => {
+      const headingId = `acc-head-${tb.teamId}`
+      const collapseId = `acc-col-${tb.teamId}`
+      const open = idx === 0 // первую раскрываем
+      const rowsHtml = tb.rows.map(d => {
+        const payBadge = d.pay === 'tokens'
+          ? `<span class="badge text-bg-primary">токены</span>`
+          : `<span class="badge text-bg-secondary">уголь</span>`
+        return `
+              <tr>
+                <td class="text-muted-2">${escapeHtml(d.reward)}</td>
+                <td class="mono">${escapeHtml(d.label)}</td>
+                <td class="text-end mono">${formatInt(d.tokens)}</td>
+                <td class="text-end mono">${formatInt(d.coal)}</td>
+                <td class="text-end mono">${formatRatio(d.ratio)}</td>
+                <td class="text-center">${payBadge}</td>
+              </tr>
+            `
+      }).join('')
+
+      return `
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="${headingId}">
+                <button
+                  class="accordion-button ${open ? '' : 'collapsed'}"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#${collapseId}"
+                  aria-expanded="${open ? 'true' : 'false'}"
+                  aria-controls="${collapseId}"
+                >
+                  <div class="w-100 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <div class="fw-semibold">${escapeHtml(tb.team)}</div>
+                    <div class="d-flex flex-wrap gap-2">
+                      <span class="badge badge-soft">этапов: ${tb.stages}</span>
+                      <span class="badge badge-soft mono">токены: ${formatInt(tb.tokens)}</span>
+                      <span class="badge badge-soft mono">уголь: ${formatInt(tb.coal)}</span>
+                    </div>
+                  </div>
+                </button>
+              </h2>
+
+              <div
+                id="${collapseId}"
+                class="accordion-collapse collapse ${open ? 'show' : ''}"
+                aria-labelledby="${headingId}"
+              >
+                <div class="accordion-body">
+                  <div class="table-responsive">
+                    <table class="table table-sm table-dark table-striped align-middle mb-0">
+                      <thead>
+                        <tr>
+                          <th>Награда</th>
+                          <th>Этап</th>
+                          <th class="text-end">Токены</th>
+                          <th class="text-end">Уголь</th>
+                          <th class="text-end">CTR</th>
+                          <th class="text-center">Оплата</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${rowsHtml}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `
+    }).join('')
+
+    // summary table per team
+    teamsTbody.innerHTML = teamBlocks.map(tb => `
+          <tr>
+            <td>${escapeHtml(tb.team)}</td>
+            <td class="text-end mono">${formatInt(tb.stages)}</td>
+            <td class="text-end mono">${formatInt(tb.tokens)}</td>
+            <td class="text-end mono">${formatInt(tb.coal)}</td>
+          </tr>
+        `).join('')
+  }
+
+  // ====== ACTION ======
+  calcBtn.addEventListener('click', () => {
+    const errs = []
+    const tokensAvailable = Number(document.getElementById('tokensAvailable').value)
+
+    if (!Number.isFinite(tokensAvailable) || tokensAvailable < 0) errs.push('Доступные токены должны быть неотрицательным числом.')
+
+    const goals = collectGoals()
+    if (goals.length === 0) errs.push('Добавь хотя бы одну цель (команда + этап).')
+
+    renderErrors(errs)
+    if (errs.length) { renderEmptyResult(); return }
+
+    const requiredStages = buildRequiredStages(goals)
+    if (requiredStages.length === 0) {
+      renderErrors(['Не удалось построить список этапов по выбранным целям (проверь выбор).'])
+      renderEmptyResult()
+      return
+    }
+
+    const model = optimizePayment(requiredStages, Math.floor(tokensAvailable))
+
+    renderResults(model, {
+      goalsCount: goals.length,
+      uniqueTeamsCount: new Set(goals.map(g => g.teamId)).size
+    })
+  })
+
+  // ====== utils ======
+  function escapeHtml(s) {
+    return String(s)
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#039;')
+  }
+
+  function formatInt(n) {
+    const x = Math.round(Number(n) || 0)
+    return x.toLocaleString('ru-RU')
+  }
+
+  function formatRatio(r) {
+    if (!Number.isFinite(r)) return '∞'
+    const s = (Math.round(r * 100) / 100).toFixed(2)
+    return s.replace(/\.00$/, '').replace(/(\.\d)0$/, '$1')
+  }
+</script>
+</body>
+</html>

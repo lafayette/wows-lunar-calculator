@@ -2,9 +2,9 @@
 
 body {
   background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(13,110,253,.10), transparent 60%),
-    radial-gradient(900px 500px at 110% 10%, rgba(32,201,151,.10), transparent 55%),
-    #0b1220;
+          radial-gradient(1200px 600px at 10% -10%, rgba(13,110,253,.10), transparent 60%),
+          radial-gradient(900px 500px at 110% 10%, rgba(32,201,151,.10), transparent 55%),
+          #0b1220;
   color: #e9eefc;
 }
 
@@ -29,6 +29,11 @@ body {
   border: 1px solid rgba(255,255,255,.12);
   background: rgba(255,255,255,.06);
   white-space: nowrap;
+}
+
+.pill-sm {
+  padding: .2rem .55rem;
+  font-size: .85rem;
 }
 
 .table-darkish {
