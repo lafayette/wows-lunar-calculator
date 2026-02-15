@@ -1,6 +1,6 @@
 export const TEAMS = [
   {
-    team: 'Newport',
+    team: 'Neonport',
     rewards: [
       {
         id: 1,
