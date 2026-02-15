@@ -858,55 +858,56 @@ export const TEAMS = [
             coal: 34000,
             tokens: 2400
           },
+        ]
+      },
+      {
+        id: 4,
+        name: 'Mahtaga',
+        stages: [
           {
-            id: 9,
+            id: 1,
             coal: 10500,
             tokens: 600
           },
           {
-            id: 10,
+            id: 2,
             coal: 14000,
             tokens: 800
           },
           {
-            id: 11,
+            id: 3,
             coal: 17500,
             tokens: 1000
           },
           {
-            id: 12,
+            id: 4,
             coal: 20500,
             tokens: 1200
           },
           {
-            id: 13,
+            id: 5,
             coal: 27500,
             tokens: 1600
           },
           {
-            id: 14,
+            id: 6,
             coal: 34500,
             tokens: 2000
           },
           {
-            id: 15,
+            id: 7,
             coal: 41500,
             tokens: 2400
           },
           {
-            id: 16,
+            id: 8,
             coal: 50000,
             tokens: 2900
           }
         ]
-      }
-    ]
-  },
-  {
-    team: 'Mahtaga',
-    rewards: [
+      },
       {
-        id: 1,
+        id: 5,
         name: 'Sharqi',
         stages: [
           {
@@ -962,5 +963,5 @@ export const TEAMS = [
         ]
       }
     ]
-  }
+  },
 ]
