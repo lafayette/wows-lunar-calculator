@@ -19,14 +19,20 @@
   <div class="container py-4 py-md-5">
     <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
       <div>
-        <div class="d-flex align-items-center gap-2">
-          <h1 class="h3 m-0 brand">
-            {{ t('appTitle') }}
-          </h1>
-        </div>
+        <h1 class="h3 m-0 brand">
+          {{ t('appTitle') }}
+        </h1>
       </div>
 
       <div class="d-flex gap-2 align-items-center">
+        <button
+          class="btn btn-outline-light"
+          :disabled="items.length === 0"
+          @click="share"
+        >
+          {{ t('share') }}
+        </button>
+
         <div class="btn-group" role="group" aria-label="language switch">
           <button class="btn btn-outline-light" :class="{ active: lang === &quot;ru&quot; }" @click="setLang(&quot;ru&quot;)">
             {{ t('ru') }}
@@ -186,60 +192,67 @@
           <div class="table-responsive">
             <table class="table table-sm table-darkish align-middle">
               <thead>
-                <tr class="muted">
-                  <th style="width: 22%;">
-                    {{ t('team') }}
-                  </th>
-                  <th style="width: 12%;">
-                    {{ t('stage') }}
-                  </th>
-                  <th style="width: 26%;">
-                    {{ t('rewardWholeStage') }}
-                  </th>
-                  <th style="width: 16%;">
-                    {{ t('payment') }}
-                  </th>
-                  <th style="width: 12%;" title="Coal to Token ratio">
-                    {{ t('ratioCol') }}
-                  </th>
-                  <th style="width: 17%;" class="text-end">
-                    {{ t('cost') }}
-                  </th>
-                  <th style="width: 5%;" class="text-end" />
-                </tr>
+              <tr class="muted">
+                <th style="width: 22%;">
+                  {{ t('team') }}
+                </th>
+                <th style="width: 12%;">
+                  {{ t('stage') }}
+                </th>
+                <th style="width: 26%;">
+                  {{ t('rewardWholeStage') }}
+                </th>
+                <th style="width: 16%;">
+                  {{ t('payment') }}
+                </th>
+                <th style="width: 12%;" title="Coal to Token ratio">
+                  {{ t('ratioCol') }}
+                </th>
+                <th style="width: 17%;" class="text-end">
+                  {{ t('cost') }}
+                </th>
+                <th style="width: 5%;" class="text-end" />
+              </tr>
               </thead>
 
               <tbody v-if="items.length === 0">
-                <tr class="muted">
-                  <td colspan="7" class="py-4 text-center">
-                    {{ t('empty') }}
-                  </td>
-                </tr>
+              <tr class="muted">
+                <td colspan="7" class="py-4 text-center">
+                  {{ t('empty') }}
+                </td>
+              </tr>
               </tbody>
 
               <tbody v-else>
-                <tr v-for="it in items" :key="it.id">
-                  <td><span class="badge badge-soft">{{ it.team }}</span></td>
-                  <td><span class="pill">{{ it.stage }}</span></td>
-                  <td class="muted">
-                    {{ it.is_reward_stage ? it.reward : '' }}
-                  </td>
-                  <td>
-                    <span v-if="it.currency === &quot;token&quot;" class="badge bg-primary-subtle text-primary-emphasis">{{ t('tokens') }}</span>
-                    <span v-else class="badge bg-secondary text-light">{{ t('coal') }}</span>
-                  </td>
-                  <td class="small" style="white-space:nowrap;" :style="ratioCellStyle(it)">
-                    {{ (it.coal_amount / it.token_amount).toFixed(2) }}
-                  </td>
-                  <td class="text-end fw-semibold">
-                    {{ (it.currency === 'token' ? it.token_amount : it.coal_amount).toLocaleString('ru-RU') }}
-                  </td>
-                  <td class="text-end">
-                    <button v-if="canRemove(it)" class="btn btn-sm btn-outline-light" title="Remove" @click="removeItem(it)">
-                      ✕
-                    </button>
-                  </td>
-                </tr>
+              <tr v-for="it in items" :key="it.id">
+                <td><span class="badge badge-soft">{{ it.team }}</span></td>
+                <td><span class="pill">{{ it.stage }}</span></td>
+                <td class="muted">
+                  {{ it.is_reward_stage ? it.reward : '' }}
+                </td>
+                <td>
+                    <span v-if="it.currency === 'token'" class="badge bg-primary-subtle text-primary-emphasis">
+                      {{ t('tokens') }}
+                    </span>
+                  <span v-else class="badge bg-secondary text-light">{{ t('coal') }}</span>
+                </td>
+                <td class="small" style="white-space:nowrap;" :style="ratioCellStyle(it)">
+                  {{ (it.coal_amount / it.token_amount).toFixed(2) }}
+                </td>
+                <td class="text-end fw-semibold">
+                  {{ (it.currency === 'token' ? it.token_amount : it.coal_amount).toLocaleString('ru-RU') }}
+                </td>
+                <td class="text-end">
+                  <button
+                    v-if="canRemove(it)"
+                    class="btn btn-sm btn-outline-light"
+                    title="Remove"
+                    @click="removeItem(it)"
+                  >
+                    ✕
+                  </button>
+                </td>
+              </tr>
               </tbody>
             </table>
           </div>
@@ -253,15 +266,13 @@
 </style>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import { TEAMS } from './data/stages'
 import en from './i18n/en'
 import ru from './i18n/ru'
 
 const dicts = { en, ru }
 const lang = ref('en')
-
-const teams = TEAMS.map(t => t.team).sort((a, b) => a.localeCompare(b))
 
 function setLang(code) {
   if (code === 'en' || code === 'ru') lang.value = code
@@ -277,19 +288,42 @@ function stageKey(stageStr) {
   return Number(a) * 1000 + Number(b)
 }
 
-// Build a flat list per team while keeping reward->stages ordering.
+const teamIdToName = new Map()
+const teamNameToId = new Map()
+
+let _ti = 0
+while (_ti < TEAMS.length) {
+  const t0 = TEAMS[_ti]
+  if (typeof t0?.id === 'number' && typeof t0?.team === 'string') {
+    teamIdToName.set(t0.id, t0.team)
+    teamNameToId.set(t0.team, t0.id)
+  }
+  _ti = _ti + 1
+}
+
+const teams = TEAMS.map(t0 => t0.team).sort((a, b) => a.localeCompare(b))
+
+// Build a flat list per team while keeping reward->stages ordering
 const byTeam = new Map()
 const allFlat = []
 
-for (const teamObj of TEAMS) {
+let _t = 0
+while (_t < TEAMS.length) {
+  const teamObj = TEAMS[_t]
   const flat = []
+
   const rewardsSorted = [...teamObj.rewards].sort((a, b) => a.id - b.id)
 
-  for (const reward of rewardsSorted) {
+  let _r = 0
+  while (_r < rewardsSorted.length) {
+    const reward = rewardsSorted[_r]
     const stagesSorted = [...reward.stages].sort((a, b) => a.id - b.id)
+
     const lastStageId = stagesSorted.length ? stagesSorted[stagesSorted.length - 1].id : null
 
-    for (const st of stagesSorted) {
+    let _s = 0
+    while (_s < stagesSorted.length) {
+      const st = stagesSorted[_s]
       const row = {
         team: teamObj.team,
         reward: reward.name,
@@ -300,43 +334,126 @@ for (const teamObj of TEAMS) {
       }
       flat.push(row)
       allFlat.push(row)
+      _s = _s + 1
     }
+
+    _r = _r + 1
   }
 
   flat.sort((x, y) => stageKey(x.stage) - stageKey(y.stage))
   byTeam.set(teamObj.team, flat)
+
+  _t = _t + 1
 }
 
 const selectedTeam = ref(teams[0] ?? '')
 const currency = ref('token')
 const items = ref([])
 
-const STORAGE_KEY = 'lunarcalc.selectedStages'
-const STORAGE_VERSION = 1
+const URL_STATE_KEY = 's'
 
-function safeJsonParse(str) {
-  try {
-    return JSON.parse(str)
-  } catch {
-    return null
-  }
+function getUrlStateRaw() {
+  const url = new URL(window.location.href)
+  return url.searchParams.get(URL_STATE_KEY)
 }
 
-function rebuildSavedItems(rawItems) {
-  if (!Array.isArray(rawItems)) return []
+function setUrlStateRaw(raw) {
+  const url = new URL(window.location.href)
+  if (!raw) url.searchParams.delete(URL_STATE_KEY)
+  else url.searchParams.set(URL_STATE_KEY, raw)
+  window.history.replaceState(null, '', url.toString())
+}
+
+function parseStateFromUrl(raw) {
+  if (!raw) return []
+
+  const parts = raw.split('.')
+  const out = []
+
+  let i = 0
+  while (i < parts.length) {
+    const p = parts[i]
+    if (!p) return null
+
+    const n = Number.parseInt(p, 36)
+    if (!Number.isFinite(n)) return null
+    if (!Number.isInteger(n)) return null
+    if (n < 0 || n > 4095) return null
+
+    const teamId = (n >> 9) & 7
+    const rewardId = (n >> 6) & 7
+    const stageId = (n >> 1) & 31
+    const curBit = n & 1
+
+    if (teamId <= 0 || rewardId <= 0 || stageId <= 0) return null
+
+    const team = teamIdToName.get(teamId)
+    if (!team) return null
+
+    out.push({
+      team,
+      stage: `${rewardId}.${stageId}`,
+      currency: curBit === 1 ? 'coal' : 'token'
+    })
+
+    i = i + 1
+  }
+
+  return out
+}
+
+function encodeStateToUrl(itemsList) {
+  const out = []
+
+  let i = 0
+  while (i < itemsList.length) {
+    const it = itemsList[i]
+
+    const teamId = teamNameToId.get(it.team)
+    if (!teamId) return ''
+
+    const [rewardIdStr, stageIdStr] = String(it.stage).split('.')
+    const rewardId = Number(rewardIdStr)
+    const stageId = Number(stageIdStr)
+
+    if (!Number.isInteger(rewardId) || rewardId <= 0 || rewardId > 7) return ''
+    if (!Number.isInteger(stageId) || stageId <= 0 || stageId > 31) return ''
+
+    const curBit = it.currency === 'coal' ? 1 : 0
+
+    const packed =
+      ((teamId & 7) << 9) |
+      ((rewardId & 7) << 6) |
+      ((stageId & 31) << 1) |
+      (curBit & 1)
+
+    out.push(packed.toString(36))
+
+    i = i + 1
+  }
+
+  return out.join('.')
+}
+
+function rebuildItemsFromState(stateItems) {
+  if (!Array.isArray(stateItems)) return []
 
   const kept = []
-  const byTeamKeptKey = new Set()
+  const keepStageKeys = new Set()
 
-  for (const team of teams) {
+  // Validate per-team strict prefixes against current data
+  let ti = 0
+  while (ti < teams.length) {
+    const team = teams[ti]
     const list = byTeam.get(team) ?? []
-    const teamRaw = rawItems
+
+    const teamRaw = stateItems
       .filter(x => x && x.team === team)
       .slice()
       .sort((a, b) => stageKey(a.stage) - stageKey(b.stage))
 
     let i = 0
-    for (; i < teamRaw.length; i++) {
+    while (i < teamRaw.length) {
       const expected = list[i]
       const got = teamRaw[i]
       if (!expected || !got) break
@@ -344,73 +461,132 @@ function rebuildSavedItems(rawItems) {
       const isCurrencyOk = got.currency === 'token' || got.currency === 'coal'
       if (!isCurrencyOk) break
       if (got.stage !== expected.stage) break
-      if (Number(got.token_amount) !== Number(expected.token_amount)) break
-      if (Number(got.coal_amount) !== Number(expected.coal_amount)) break
 
-      const key = `${team}|${expected.stage}`
-      byTeamKeptKey.add(key)
+      keepStageKeys.add(`${team}|${expected.stage}`)
+      i = i + 1
     }
+
+    ti = ti + 1
   }
 
-  // Preserve the original cross-team order, but only keep valid per-team prefixes
-  for (const raw of rawItems) {
-    if (!raw || typeof raw !== 'object') continue
+  // Preserve original cross-team order
+  let j = 0
+  while (j < stateItems.length) {
+    const raw = stateItems[j]
+    if (!raw || typeof raw !== 'object') {
+      j = j + 1
+      continue
+    }
+
     const team = raw.team
     const stage = raw.stage
-    if (typeof team !== 'string' || typeof stage !== 'string') continue
+    const cur = raw.currency
 
-    const key = `${team}|${stage}`
-    if (!byTeamKeptKey.has(key)) continue
+    if (typeof team !== 'string' || typeof stage !== 'string') {
+      j = j + 1
+      continue
+    }
+    if (cur !== 'token' && cur !== 'coal') {
+      j = j + 1
+      continue
+    }
+
+    const stageKeyStr = `${team}|${stage}`
+    if (!keepStageKeys.has(stageKeyStr)) {
+      j = j + 1
+      continue
+    }
 
     const expectedList = byTeam.get(team) ?? []
     const expected = expectedList.find(r => r.stage === stage)
-    if (!expected) continue
+    if (!expected) {
+      j = j + 1
+      continue
+    }
 
     kept.push({
-      id: typeof raw.id === 'string' ? raw.id : 'i' + Math.random().toString(16).slice(2),
+      id: 'i' + Math.random().toString(16).slice(2),
       team,
       stage,
       reward: expected.reward,
-      currency: raw.currency === 'coal' ? 'coal' : 'token',
+      currency: cur,
       token_amount: expected.token_amount,
       coal_amount: expected.coal_amount,
       is_reward_stage: expected.is_reward_stage
     })
 
-    byTeamKeptKey.delete(key)
+    keepStageKeys.delete(stageKeyStr)
+
+    j = j + 1
   }
 
   return kept
 }
 
-function loadState() {
-  const raw = localStorage.getItem(STORAGE_KEY)
+const suppressUrlSync = ref(false)
+
+function loadStateFromUrl() {
+  const raw = getUrlStateRaw()
   if (!raw) return
 
-  const parsed = safeJsonParse(raw)
-  if (!parsed || typeof parsed !== 'object') {
-    localStorage.removeItem(STORAGE_KEY)
-    return
-  }
-
-  if (parsed.v !== STORAGE_VERSION || !Array.isArray(parsed.items)) {
-    localStorage.removeItem(STORAGE_KEY)
-    return
-  }
-
-  items.value = rebuildSavedItems(parsed.items)
-}
-
-function saveState() {
-  const payload = { v: STORAGE_VERSION, items: items.value }
+  let parsed
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
+    parsed = parseStateFromUrl(raw)
   } catch {
-    // Ignore storage quota / disabled storage errors
+    parsed = null
   }
+
+  if (!parsed) {
+    setUrlStateRaw('')
+    return
+  }
+
+  suppressUrlSync.value = true
+  items.value = rebuildItemsFromState(parsed)
+
+  queueMicrotask(() => {
+    suppressUrlSync.value = false
+  })
 }
 
-loadState()
+function saveStateToUrl() {
+  const minimal = items.value.map(i => ({
+    team: i.team,
+    stage: i.stage,
+    currency: i.currency
+  }))
+
+  const raw = encodeStateToUrl(minimal)
+  setUrlStateRaw(raw)
+}
+
+function share() {
+  if (items.value.length === 0) return
+  const url = window.location.href
+  window.prompt(t('sharePrompt'), url)
+}
+
+onMounted(() => {
+  loadStateFromUrl()
+
+  window.addEventListener('popstate', () => {
+    suppressUrlSync.value = true
+    items.value = []
+    loadStateFromUrl()
+    queueMicrotask(() => {
+      suppressUrlSync.value = false
+    })
+  })
+})
+
+watch(
+  items,
+  () => {
+    if (suppressUrlSync.value) return
+    saveStateToUrl()
+  },
+  { deep: true }
+)
 
 const ratioStats = (() => {
   const ratios = allFlat.map(r => r.coal_amount / r.token_amount).filter(v => Number.isFinite(v))
@@ -449,18 +625,21 @@ watch(currency, v => {
   pushToast(curLabel, 'info', 1200)
 })
 
-watch(
-  items,
-  () => {
-    saveState()
-  },
-  { deep: true }
-)
-
 const progressIndex = computed(() => {
   const map = new Map()
-  for (const name of teams) map.set(name, 0)
-  for (const it of items.value) map.set(it.team, (map.get(it.team) ?? 0) + 1)
+  let i = 0
+  while (i < teams.length) {
+    map.set(teams[i], 0)
+    i = i + 1
+  }
+
+  let j = 0
+  while (j < items.value.length) {
+    const it = items.value[j]
+    map.set(it.team, (map.get(it.team) ?? 0) + 1)
+    j = j + 1
+  }
+
   return map
 })
 
@@ -536,6 +715,9 @@ function addNext() {
 }
 
 function resetAll() {
+  const ok = window.confirm(t('resetConfirm'))
+  if (!ok) return
+
   items.value = []
   pushToast(t('toastReset'), 'info')
 }
