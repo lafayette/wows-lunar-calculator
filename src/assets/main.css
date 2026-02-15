@@ -1,0 +1,106 @@
+:root { --card-radius: 18px; }
+
+body {
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(13,110,253,.10), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, rgba(32,201,151,.10), transparent 55%),
+    #0b1220;
+  color: #e9eefc;
+}
+
+.muted { color: rgba(233,238,252,.72); }
+
+.glass {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: var(--card-radius);
+  box-shadow: 0 12px 35px rgba(0,0,0,.35);
+  backdrop-filter: blur(10px);
+}
+
+.brand {
+  letter-spacing: .2px;
+  font-weight: 650;
+}
+
+.pill {
+  border-radius: 999px;
+  padding: .35rem .7rem;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  white-space: nowrap;
+}
+
+.table-darkish {
+  --bs-table-bg: transparent;
+  --bs-table-color: #e9eefc;
+  --bs-table-border-color: rgba(255,255,255,.12);
+}
+
+.form-select, .form-control {
+  background-color: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.14);
+  color: #e9eefc;
+  border-radius: 14px;
+}
+
+.form-select:focus, .form-control:focus {
+  box-shadow: 0 0 0 .25rem rgba(13,110,253,.20);
+  border-color: rgba(13,110,253,.50);
+  background-color: rgba(255,255,255,.08);
+  color: #e9eefc;
+}
+
+/* Dark dropdown list (best-effort across browsers) */
+.form-select {
+  color-scheme: dark;
+  -webkit-color-scheme: dark;
+}
+.form-select option,
+.form-select optgroup {
+  background-color: rgba(15, 23, 42, 1);
+  color: #e9eefc;
+}
+.form-select option:checked {
+  background-color: rgba(13, 110, 253, .35);
+  color: #e9eefc;
+}
+.form-select option:hover {
+  background-color: rgba(255,255,255,.10);
+}
+
+.btn-primary {
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(13,110,253,.20);
+}
+
+.btn-outline-light {
+  border-radius: 14px;
+  border-color: rgba(255,255,255,.18);
+  color: #e9eefc;
+}
+
+.badge-soft {
+  background: rgba(255,255,255,.08) !important;
+  border: 1px solid rgba(255,255,255,.12);
+  color: #e9eefc;
+  font-weight: 600;
+}
+
+.small-note { font-size: .9rem; }
+
+.toast-container { z-index: 1080; }
+
+.my-toast {
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+  color: #e9eefc;
+  border-radius: 14px;
+  box-shadow: 0 12px 35px rgba(0,0,0,.35);
+  backdrop-filter: blur(10px);
+}
+
+.my-toast .btn-close {
+  filter: invert(1);
+  opacity: .85;
+}
