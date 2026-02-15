@@ -1,5 +1,6 @@
 export const TEAMS = [
   {
+    id: 1,
     team: 'Neonport',
     rewards: [
       {
@@ -123,6 +124,7 @@ export const TEAMS = [
     ]
   },
   {
+    id: 2,
     team: 'Imperium Aeternum',
     rewards: [
       {
@@ -272,6 +274,7 @@ export const TEAMS = [
     ]
   },
   {
+    id: 3,
     team: 'Shamrockville',
     rewards: [
       {
@@ -375,6 +378,7 @@ export const TEAMS = [
     ]
   },
   {
+    id: 4,
     team: 'Pinatopia',
     rewards: [
       {
@@ -498,6 +502,7 @@ export const TEAMS = [
     ]
   },
   {
+    id: 5,
     team: 'Rustport',
     rewards: [
       {
@@ -621,6 +626,7 @@ export const TEAMS = [
     ]
   },
   {
+    id: 6,
     team: 'Libertatia',
     rewards: [
       {
@@ -770,6 +776,7 @@ export const TEAMS = [
     ]
   },
   {
+    id: 7,
     team: 'Kingdom of Dunes',
     rewards: [
       {
